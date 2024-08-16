@@ -28,23 +28,20 @@ app.use(bodyParser.json());
 /**************************************************************************** */
 
 app.get('/filteredimage', async (req, res) => {
-  const { image_url } = req.query;
+  let { image_url } = req.query;
   if (!image_url) {
     return res.status(400).send('Missing image_url parameter');
   }
 
-  try {
-    console.log(image_url);
-
-    const filteredPath = await filterImageFromURL(image_url);
-    console.log(filteredPath);
-
-    res.sendFile(filteredPath, () => {
-      deleteLocalFiles([filteredPath]);
+  const filterResult = await filterImageFromURL(image_url)
+    .then((filterResult) => {
+      res.sendFile(filterResult, function () {
+        deleteLocalFiles([filterResult]);
+      });
+    })
+    .catch((error) => {
+      console.log('Error caught', error.message);
     });
-  } catch (error) {
-    return res.status(500).send('Error processing the image');
-  }
 });
 
 //! END @TODO1
